@@ -63,8 +63,4 @@ def split_data(DataFrame, test_size = 0.2, seed = 123):
 
     train_dataset = [X_train, y_train]
     test_dataset = [X_test, y_test]
-    print(f"number of train datasets are {len(X_train)}"
-          f"(positive ={sum(y_train == 1)}, negative={sum(y_train == 0)})")
-    print(f"number of test datasets are {len(X_test)}"
-          f"(positive={sum(y_test == 1)}, negative={sum(y_test == 0)})")
     return train_dataset, test_dataset
