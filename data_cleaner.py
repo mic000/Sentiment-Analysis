@@ -4,7 +4,7 @@ import os, re, csv
 from sklearn.model_selection import train_test_split
 
 
-def clean_text (file_path, name_file, char = None):
+def clean_text (dataframe, char = None):
     """
     stage 1: clean raw data
 
@@ -14,35 +14,59 @@ def clean_text (file_path, name_file, char = None):
 
     :return: write the filtered data file and store at the parent folder as CSV file
     """
-
-    # set raw data input and filtered data output pathway
-    # store filtered datasets into folders
-    input_path = os.path.join(file_path, name_file + ".txt")
-    output_path = os.path.join(os.path.dirname(file_path), f"{name_file}_ready.csv")
-
-    # read raw datasets and split label scores and sentences and ignore quotation marks
-    df = pd.read_csv(input_path, sep="\t", names=["Sentences", "Label"], quoting=3)
-
-    # truncate sentences to n characters and drop not completely sentences in limit characters
     if char is not None:
-        df["Sentences"] = df["Sentences"].str.slice(stop = int(char))
+        dataframe["Sentences"] = dataframe["Sentences"].str.slice(stop = int(char))
 
     rows_to_drop = []
-    for i in range(len(df)):
-        sentence = df['Sentences'].iloc[i]
+    for i in range(len(dataframe)):
+        sentence = dataframe['Sentences'].iloc[i]
         # marked index sentences which is not completely sentences
         if sentence[-1].isalpha():
             rows_to_drop.append(i)
-    df = df.drop(rows_to_drop).reset_index(drop=True)
+    dataframe = dataframe.drop(rows_to_drop).reset_index(drop=True)
 
     # lowercase for all text in sentences, compose space, only keep words
-    df["Sentences"] = df["Sentences"].str.lower()
-    df["Sentences"] = df["Sentences"].str.replace(r"[^a-zA-Z]", " ", regex=True)
-    df["Sentences"] = df["Sentences"].str.replace(r"\s+", " ", regex=True).str.strip()
+    dataframe["Sentences"] = dataframe["Sentences"].str.lower()
+    dataframe["Sentences"] = dataframe["Sentences"].str.replace(r"[^a-zA-Z]", " ", regex=True)
+    dataframe["Sentences"] = dataframe["Sentences"].str.replace(r"\s+", " ", regex=True).str.strip()
+    return dataframe
 
-    df[["Sentences", "Label"]].to_csv(output_path, index=False)
-    return df
 
+def text_combined(file_path, file_names, char=None):
+    """
+    combine multiple datasets
+
+    :param file_path: folder path containing all .txt files
+    :param file_names: list of file names (without .txt extension)
+                       e.g. ["amazon_cells_labelled", "imdb_labelled", "yelp_labelled"]
+    :param char: truncate to N characters (None = no truncation)
+    :return: combined cleaned DataFrame
+    """
+    all_dfs = []
+
+    for name in file_names:
+        input_path = os.path.join(file_path, name + ".txt")
+        if not os.path.exists(input_path):
+            print(f"  [WARNING] file not found: {input_path}, skipped")
+            continue
+
+        df = pd.read_csv(input_path, sep="\t", names=["Sentences", "Label"], quoting=3)
+        df = clean_text(df, char = char)
+        all_dfs.append(df)
+
+    if not all_dfs:
+        raise FileNotFoundError(f"No data files found in {file_path}")
+
+    combined = pd.concat(all_dfs, ignore_index=True)
+
+    # save combined csv
+    output_path = os.path.join(os.path.dirname(file_path), "combined_ready.csv")
+    combined[["Sentences", "Label"]].to_csv(output_path, index=False)
+
+    print(f"\n  [Combined] total: {len(combined)} reviews "
+          f"(positive={sum(combined['Label'] == 1)}, negative={sum(combined['Label'] == 0)})")
+
+    return combined
 
 
 def split_data(DataFrame, test_size = 0.2, seed = 123):
