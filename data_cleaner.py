@@ -68,10 +68,3 @@ def split_data(DataFrame, test_size = 0.2, seed = 123):
     print(f"number of test datasets are {len(X_test)}"
           f"(positive={sum(y_test == 1)}, negative={sum(y_test == 0)})")
     return train_dataset, test_dataset
-
-
-
-if __name__ == "__main__":
-    df = clean_text("data/raw", "amazon_cells_labelled", 100)
-    print(df.head(10))
-    split_data(df)

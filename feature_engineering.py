@@ -1,8 +1,5 @@
 import numpy as np
-from pandas.core.common import random_state
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 
 
 def tfidf_features(train_dataset, test_dataset, max = 1000, ngram = (1, 2)):
@@ -31,70 +28,50 @@ def tfidf_features(train_dataset, test_dataset, max = 1000, ngram = (1, 2)):
     X_test_tfidf = vectorizer.transform(X_test)  # transform doc. to doc.-term matrix and df learned by fit_transform
 
     feature_names = vectorizer.get_feature_names_out()  # to retrieve the names of features produced by a transformer
-    print(f"\n[TF-IDF] feature extraction is completed")
-    print(f"  size of wordlist: {len(feature_names)}")
+    print(f"\n[TF-IDF] feature extraction completed")
+    print(f"  size of vocabulary: {len(feature_names)}")
     print(f"  top feature words: {list(feature_names[:10])}")
+    print(f"  stored non-zero elements: {X_train_tfidf.nnz}")
+    print(f"  sparsity: {1 - X_train_tfidf.nnz / np.prod(X_train_tfidf.shape):.4f}")
     return X_train_tfidf, X_test_tfidf, vectorizer
 
 
-def apply_pca(X_train_tfidf, X_test_tfidf, n_components = 100, seed = 123):
+def inspect_tfidf(X_tfidf, vectorizer, sample_index=0, top_n=20):
     """
-    Stage 3b: PCA dimensionality reduction
+    Inspect a specific row in the TF-IDF matrix: see which words and their weights.
 
-    principle：
-      1. Standardize: x' = (x - mean) / std
-      2. Covariance:  S = (1/N) X'^T X'
-      3. Eigendecomp: S = W Λ W^T
-      4. Project:     X_reduced = X' @ W_k
-
-    :param X_train_tfidf:
-    :param X_test_tfidf:
-    :param n_components: new dimension after reduced
-    :param seed:
-    :return:
+    :param X_tfidf: TF-IDF sparse matrix
+    :param vectorizer: fitted TfidfVectorizer (to get word names)
+    :param sample_index: which document (row) to inspect
+    :param top_n: show top N words by weight
     """
-    X_train_dense = X_train_tfidf.toarray()
-    X_test_dense = X_test_tfidf.toarray()
+    feature_names = vectorizer.get_feature_names_out()
+    row = X_tfidf[sample_index]
+    nonzero_indices = row.nonzero()[1]
 
-    # standardization
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train_dense)
-    X_test_scaled = scaler.transform(X_test_dense)
+    print(f"\n[Inspect] Row {sample_index}: {len(nonzero_indices)} non-zero words")
+    print(f"  {'Index':<8} {'Word':<25} {'TF-IDF Weight':<15}")
+    print(f"  {'-'*48}")
 
-    pca = PCA(n_components=n_components, random_state=seed)
-    X_train_pca = pca.fit_transform(X_train_scaled)
-    X_test_pca = pca.transform(X_test_scaled)
+    words_weights = []
+    for idx in nonzero_indices:
+        word = feature_names[idx]
+        weight = row[0, idx]
+        words_weights.append((idx, word, weight))
 
-    explained_var = sum(pca.explained_variance_ratio_) * 100
-    print(f"\n[PCA] completed: {X_train_dense.shape[1]}D → {n_components}D")
-    print(f"  cumulative variance interpretation rate: {explained_var:.2f}%")
-    return X_train_pca, X_test_pca, scaler, pca
+    # sort by weight descending
+    words_weights.sort(key=lambda x: x[2], reverse=True)
+    for idx, word, weight in words_weights[:top_n]:
+        print(f"  [{idx:<5}] {word:<25} {weight:.6f}")
+
+    # verify L2 normalization
+    l2_norm = np.sqrt(sum(w**2 for _, _, w in words_weights))
+    print(f"\n  L2 norm = {l2_norm:.6f}  (should be 1.0)")
 
 
-def optimal_dim(X_train_tfidf, threshold = 85, max_components = 500, seed = 123):
-    """
-    find the optimal number of principal components required to reach variance for drawing the variance curve graph
-
-    :param X_train_tfidf:
-    :param threshold: var. interpretation rate threshold
-    :param max_components: max. number of principal components to calculate
-    :return:
-    """
-    X_dense = X_train_tfidf.toarray()
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X_dense)
-
-    max_comp = min(max_components, X_scaled.shape[0], X_scaled.shape[1])
-    pca_full = PCA(n_components=max_comp, random_state=seed)
-    pca_full.fit(X_scaled)
-
-    cumulative_var = np.cumsum(pca_full.explained_variance_ratio_) * 100
-    n_90 = int(np.argmax(cumulative_var >= 90) + 1)
-    n_95 = int(np.argmax(cumulative_var >= 95) + 1)
-    n_optimal = int(np.argmax(cumulative_var >= threshold) + 1)
-
-    print(f"\n[PCA dimensional analysis]")
-    print(f"  achieve to 90%: need number of {n_90} principal components")
-    print(f"  achieve to 95%: need number of {n_95} principal components")
-    print(f"  achieve to {threshold}%: need number of {n_optimal} principal components")
-    return n_optimal, cumulative_var
+def full_vocabulary(vectorizer):
+    """Print the complete vocabulary with index numbers."""
+    feature_names = vectorizer.get_feature_names_out()
+    print(f"\n[Vocabulary] Total: {len(feature_names)} words")
+    for i, word in enumerate(feature_names):
+        print(f"  [{i:>4}] {word}")
