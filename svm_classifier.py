@@ -133,20 +133,11 @@ def run_all_experiments(X_train_tfidf, X_test_tfidf, pca_results,
         name="Linear SVM + TF-IDF", kernel='linear', C=best_C
     ))
 
-    # Exp 2: PCA-50D
-    if 50 in pca_results:
+    for dim in sorted(pca_results.keys()):
         results.append(run_svm(
-            pca_results[50]['X_train'], pca_results[50]['X_test'],
+            pca_results[dim]['X_train'], pca_results[dim]['X_test'],
             y_train, y_test,
-            name="Linear SVM + PCA-50D", kernel='linear', C=best_C
-        ))
-
-    # Exp 3: PCA-200D
-    if 200 in pca_results:
-        results.append(run_svm(
-            pca_results[200]['X_train'], pca_results[200]['X_test'],
-            y_train, y_test,
-            name="Linear SVM + PCA-200D", kernel='linear', C=best_C
+            name=f"Linear SVM + PCA-{dim}D", kernel='linear', C=best_C
         ))
 
     # Exp 4: RBF kernel — no PCA
