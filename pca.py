@@ -180,6 +180,7 @@ def apply_pca(X_train_tfidf, X_test_tfidf, n_components=100):
     # sparse → dense
     X_train_dense = X_train_tfidf.toarray()
     X_test_dense = X_test_tfidf.toarray()
+    n_components = min(n_components, X_train_dense.shape[1] - 1)
 
     # handcrafted standardization
     scaler = MyStandardScaler()
