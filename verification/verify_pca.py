@@ -12,6 +12,9 @@ This script:
 from sklearn.decomposition import PCA as SklearnPCA
 from sklearn.preprocessing import StandardScaler as SklearnScaler
 
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from data_cleaner import clean_text, split_data
 from feature_engineering import *
 from pca import MyPCA, MyStandardScaler

@@ -76,7 +76,7 @@ def plot_accuracy(results, save_path="fig2_accuracy.png"):
     bars2 = ax.bar(x, f1s, width, label='F1 Score', color=colors, alpha=0.7)
     bars3 = ax.bar(x + width, recalls, width, label='Recall', color=colors, alpha=0.4)
 
-    for bars in [bars1, bars2, bars3]:
+    for bars, label in [(bars1, 'A'), (bars2, 'F1'), (bars3, 'R')]:
         for b in bars:
             ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.3,
                     f'{b.get_height():.1f}%', ha='center', fontsize=8, fontweight='bold')
