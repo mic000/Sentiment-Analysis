@@ -65,23 +65,26 @@ def plot_accuracy(results, save_path="fig2_accuracy.png"):
     names = [r['name'] for r in results]
     accs = [r['accuracy']*100 for r in results]
     f1s = [r['f1']*100 for r in results]
+    recalls = [r['recall']*100 for r in results]
     colors = ['#4C72B0', '#DD8452', '#55A868', '#C44E52'][:len(names)]
 
     x = np.arange(len(names))
-    width = 0.35
+    width = 0.25
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    bars1 = ax.bar(x - width/2, accs, width, label='Accuracy', color=colors)
-    bars2 = ax.bar(x + width/2, f1s, width, label='F1 Score', color=colors, alpha=0.6)
+    fig, ax = plt.subplots(figsize=(12, 5))
+    bars1 = ax.bar(x - width, accs, width, label='Accuracy', color=colors)
+    bars2 = ax.bar(x, f1s, width, label='F1 Score', color=colors, alpha=0.7)
+    bars3 = ax.bar(x + width, recalls, width, label='Recall', color=colors, alpha=0.4)
 
-    for b, a in zip(bars1, accs):
-        ax.text(b.get_x()+b.get_width()/2, b.get_height()+0.3,
-                f'{a:.1f}%', ha='center', fontweight='bold', fontsize=9)
+    for bars in [bars1, bars2, bars3]:
+        for b in bars:
+            ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.3,
+                    f'{b.get_height():.1f}%', ha='center', fontsize=8, fontweight='bold')
 
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=15, ha='right', fontsize=9)
     ax.set_ylabel('Score (%)')
-    ax.set_title('Accuracy & F1 Score Comparison')
+    ax.set_title('Accuracy vs F1 Score vs Recall Comparison')
     ax.set_ylim([max(0, min(accs)-10), 100])
     ax.legend()
     ax.grid(axis='y', alpha=0.3)
@@ -101,8 +104,19 @@ def plot_time(results, save_path="fig3_time.png"):
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(9, 5))
-    ax.bar(x - width/2, train_t, width, label='Train Time', color='#4C72B0')
-    ax.bar(x + width/2, test_t, width, label='Test Time', color='#DD8452')
+    bars1 = ax.bar(x - width/2, train_t, width, label='Train Time', color='#4C72B0')
+    bars2 = ax.bar(x + width/2, test_t, width, label='Test Time', color='#DD8452')
+
+    for bars in [bars1, bars2]:
+        for b in bars:
+            ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.05,
+                    f'{b.get_height():.3f}s', ha='center', fontsize=8, fontweight='bold')
+    # for b in bars1:
+    #
+    # for b in bars2:
+    #     ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.05,
+    #             f'{b.get_height():.4f}s', ha='center', fontsize=8, fontweight='bold')
+
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=15, ha='right', fontsize=9)
     ax.set_ylabel('Time (s)')

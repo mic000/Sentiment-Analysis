@@ -13,7 +13,7 @@ import time
 from sklearn.svm import LinearSVC, SVC
 from sklearn.metrics import (
     accuracy_score, confusion_matrix,
-    classification_report, f1_score
+    classification_report, f1_score, recall_score
 )
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 
@@ -47,6 +47,7 @@ def run_svm(X_train, X_test, y_train, y_test,
     # evaluate
     acc = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
     cm = confusion_matrix(y_test, y_pred)
 
     print(f"\n{'='*52}")
@@ -57,12 +58,13 @@ def run_svm(X_train, X_test, y_train, y_test,
     print(f"  Test time:   {test_time:.6f} s")
     print(f"  Accuracy:    {acc:.4f} ({acc*100:.2f}%)")
     print(f"  F1 Score:    {f1:.4f}")
+    print(f"  Recall:      {recall:.4f}")
     print(f"  Confusion Matrix:\n{cm}")
     print(f"\n{classification_report(y_test, y_pred, target_names=['Negative','Positive'])}")
 
     return {
         'name': name, 'kernel': kernel, 'C': C,
-        'accuracy': acc, 'f1': f1, 'cm': cm,
+        'accuracy': acc, 'f1': f1, 'recall': recall, 'cm': cm,
         'train_time': train_time, 'test_time': test_time,
         'y_pred': y_pred, 'model': model
     }
