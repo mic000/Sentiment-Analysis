@@ -13,7 +13,7 @@ import time
 from sklearn.svm import LinearSVC, SVC
 from sklearn.metrics import (
     accuracy_score, confusion_matrix,
-    classification_report, f1_score
+    classification_report, f1_score, recall_score
 )
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 
@@ -47,6 +47,7 @@ def run_svm(X_train, X_test, y_train, y_test,
     # evaluate
     acc = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
     cm = confusion_matrix(y_test, y_pred)
 
     print(f"\n{'='*52}")
@@ -57,12 +58,13 @@ def run_svm(X_train, X_test, y_train, y_test,
     print(f"  Test time:   {test_time:.6f} s")
     print(f"  Accuracy:    {acc:.4f} ({acc*100:.2f}%)")
     print(f"  F1 Score:    {f1:.4f}")
+    print(f"  Recall:      {recall:.4f}")
     print(f"  Confusion Matrix:\n{cm}")
     print(f"\n{classification_report(y_test, y_pred, target_names=['Negative','Positive'])}")
 
     return {
         'name': name, 'kernel': kernel, 'C': C,
-        'accuracy': acc, 'f1': f1, 'cm': cm,
+        'accuracy': acc, 'f1': f1, 'recall': recall, 'cm': cm,
         'train_time': train_time, 'test_time': test_time,
         'y_pred': y_pred, 'model': model
     }
@@ -133,20 +135,11 @@ def run_all_experiments(X_train_tfidf, X_test_tfidf, pca_results,
         name="Linear SVM + TF-IDF", kernel='linear', C=best_C
     ))
 
-    # Exp 2: PCA-50D
-    if 50 in pca_results:
+    for dim in sorted(pca_results.keys()):
         results.append(run_svm(
-            pca_results[50]['X_train'], pca_results[50]['X_test'],
+            pca_results[dim]['X_train'], pca_results[dim]['X_test'],
             y_train, y_test,
-            name="Linear SVM + PCA-50D", kernel='linear', C=best_C
-        ))
-
-    # Exp 3: PCA-200D
-    if 200 in pca_results:
-        results.append(run_svm(
-            pca_results[200]['X_train'], pca_results[200]['X_test'],
-            y_train, y_test,
-            name="Linear SVM + PCA-200D", kernel='linear', C=best_C
+            name=f"Linear SVM + PCA-{dim}D", kernel='linear', C=best_C
         ))
 
     # Exp 4: RBF kernel — no PCA
