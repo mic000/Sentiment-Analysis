@@ -79,7 +79,7 @@ def plot_accuracy(results, save_path="fig2_accuracy.png"):
     for bars, label in [(bars1, 'A'), (bars2, 'F1'), (bars3, 'R')]:
         for b in bars:
             ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.3,
-                    f'{b.get_height():.1f}%', ha='center', fontsize=8, fontweight='bold')
+                    f'{b.get_height():.2f}%', ha='center', fontsize=8, fontweight='bold')
 
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=15, ha='right', fontsize=9)
