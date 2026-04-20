@@ -4,7 +4,7 @@ import os, re, csv
 from sklearn.model_selection import train_test_split
 
 
-def clean_text (dataframe, char = None):
+def clean_text (dataframe, char = None, rows_drop = False):
     """
     stage 1: clean raw data
 
@@ -17,13 +17,14 @@ def clean_text (dataframe, char = None):
     if char is not None:
         dataframe["Sentences"] = dataframe["Sentences"].str.slice(stop = int(char))
 
-    rows_to_drop = []
-    for i in range(len(dataframe)):
-        sentence = dataframe['Sentences'].iloc[i]
-        # marked index sentences which is not completely sentences
-        if sentence[-1].isalpha():
-            rows_to_drop.append(i)
-    dataframe = dataframe.drop(rows_to_drop).reset_index(drop=True)
+    if rows_drop is True:
+        rows_to_drop = []
+        for i in range(len(dataframe)):
+            sentence = dataframe['Sentences'].iloc[i]
+            # marked index sentences which is not completely sentences
+            if sentence[-1].isalpha():
+                rows_to_drop.append(i)
+        dataframe = dataframe.drop(rows_to_drop).reset_index(drop=True)
 
     # lowercase for all text in sentences, compose space, only keep words
     dataframe["Sentences"] = dataframe["Sentences"].str.lower()

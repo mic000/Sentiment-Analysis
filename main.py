@@ -19,11 +19,11 @@ CONFIG = {
     'random_seed':     123,
 
     # TF-IDF
-    'max_features':    3000,
+    'max_features':    2300,
     'ngram_range':     (1, 2),
 
     # PCA
-    'pca_dims':        [500, 1600],   # dimensions to test
+    'pca_dims':        [600, 450],   # dimensions to test
 
     # Cross Validation
     'cv_folds':        5,
