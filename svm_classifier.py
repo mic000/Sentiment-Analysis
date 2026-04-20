@@ -142,10 +142,10 @@ def run_all_experiments(X_train_tfidf, X_test_tfidf, pca_results,
             name=f"Linear SVM + PCA-{dim}D", kernel='linear', C=best_C
         ))
 
-    # Exp 4: RBF kernel — no PCA
-    results.append(run_svm(
-        X_train_tfidf, X_test_tfidf, y_train, y_test,
-        name="RBF SVM + TF-IDF", kernel='rbf', C=best_C
-    ))
+    # # Exp 4: RBF kernel — no PCA
+    # results.append(run_svm(
+    #     X_train_tfidf, X_test_tfidf, y_train, y_test,
+    #     name="RBF SVM + TF-IDF", kernel='rbf', C=best_C
+    # ))
 
     return results
